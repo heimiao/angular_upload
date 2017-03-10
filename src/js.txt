@@ -1,0 +1,31 @@
+注入ngFileUpload
+
+
+<div class="button" ngf-select="upload($file)">Attachment</div>
+
+--js代码
+routerApp.controller('ctrl.createWork', function ($scope, $http, $stateParams, Upload) {
+
+
+    var files;
+    $scope.upload = function (file) {
+        files = file;
+        console.log(file);
+    };
+
+
+    $scope.FileUploads = function() {
+        Upload.upload({
+            url: '/Process/SetcreateWorkInfo',
+            data: { file: files, orderNo: $stateParams.OrderNo, workinfonotes: $scope.workdetial }
+        }).then(function(resp) {
+            console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
+        }, function(resp) {
+            console.log('Error status: ' + resp.status);
+        }, function(evt) {
+            var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+            console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+        });
+    };
+
+});

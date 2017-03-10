@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>修改图片大小的上传</title>
+		<style type="text/css">
+			.cropArea {
+				background: #E4E4E4;
+				overflow: hidden;
+				width: 500px;
+				height: 350px;
+			}
+			
+			form .progress {
+				line-height: 15px;
+			}
+			
+			.progress {
+				display: inline-block;
+				width: 100px;
+				border: 3px groove #CCC;
+			}
+			
+			.progress div {
+				font-size: smaller;
+				background: orange;
+				width: 0;
+			}
+		</style>
+	</head> 
+	<body ng-app="fileUpload" ng-controller="MyCtrl">
+		<form name="myForm">
+			<div>Crop Image and Upload</div>
+			<button ngf-select ng-model="picFile" accept="image/*">
+				Select Picture</button>
+			<div ngf-drop ng-model="picFile" ngf-pattern="image/*" class="cropArea">
+				<img-crop image="picFile  | ngfDataUrl" result-image="croppedDataUrl" ng-init="croppedDataUrl=''">
+				</img-crop>
+			</div>
+			<div>
+				<img ng-src="{{croppedDataUrl}}" />
+			</div>
+			<button ng-click="upload(croppedDataUrl)">Submit</button>
+
+			<span class="progress" ng-show="progress >= 0">
+          <div style="width:{{progress}}%" ng-bind="progress + '%'"></div>
+        </span>
+			<span ng-show="result">Upload Successful</span>
+			<span class="err" ng-show="errorMsg">{{errorMsg}}</span>
+		</form>
+	</body>
+	
+	<script src="js/angular.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/ng-file-upload-shim.js"></script>
+	<script src="js/ng-file-upload.min.js" type="text/javascript" charset="utf-8"></script>
+	
+	<script type="text/javascript">
+		//inject ngFileUpload and ngImgCrop directives and services.
+		var app = angular.module('fileUpload', ['ngFileUpload', 'ngImgCrop']);
+		app.controller('MyCtrl', ['$scope', 'Upload', '$timeout', function($scope, Upload, $timeout) {
+			$scope.upload = function(dataUrl) {
+				Upload.upload({
+					url: 'https://angular-file-upload-cors-srv.appspot.com/upload',
+					data: {
+						file: Upload.dataUrltoBlob(dataUrl)
+					},
+				}).then(function(response) {
+					$timeout(function() {
+						$scope.result = response.data;
+					});
+				}, function(response) {
+					if (response.status > 0) $scope.errorMsg = response.status + ': ' + response.data;
+				}, function(evt) {
+					$scope.progress = parseInt(100.0 * evt.loaded / evt.total);
+				});
+			}
+		}]);
+	</script>
+
+</html>
